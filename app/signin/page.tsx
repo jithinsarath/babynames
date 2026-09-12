@@ -1,6 +1,6 @@
 import { signIn, auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
-import { Baby } from "lucide-react";
+import Image from "next/image";
 
 export default async function SignInPage({
   searchParams,
@@ -15,8 +15,8 @@ export default async function SignInPage({
   return (
     <div className="flex min-h-screen flex-col items-center justify-center gap-6 px-6 text-center">
       <div>
-        <div className="card-shadow mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-surface text-primary">
-          <Baby size={30} strokeWidth={2} />
+        <div className="card-shadow mx-auto mb-4 h-24 w-24 overflow-hidden rounded-full bg-surface">
+          <Image src="/mascot.png" alt="KuttiPattani mascot" width={320} height={320} className="h-full w-full object-cover" priority />
         </div>
         <h1 className="font-display text-3xl font-semibold text-ink">
           naming kp <span className="text-primary">;)</span>
