@@ -132,6 +132,15 @@ export async function deleteName(id: string) {
   revalidatePath("/vote/girl");
 }
 
+export async function bulkDeleteNames(ids: string[]) {
+  await requireAdmin();
+
+  await prisma.name.deleteMany({ where: { id: { in: ids } } });
+
+  revalidatePath("/vote/boy");
+  revalidatePath("/vote/girl");
+}
+
 export async function clearAllNames() {
   await requireAdmin();
 
