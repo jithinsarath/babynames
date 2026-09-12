@@ -17,7 +17,7 @@ export default async function AdminPage() {
       <form action={sendTestNotification} className="mb-5">
         <button
           type="submit"
-          className="flex items-center gap-2 rounded-full bg-secondary/15 px-4 py-2 text-sm font-bold text-on-secondary"
+          className="flex items-center gap-2 rounded-full bg-secondary px-4 py-2 text-sm font-bold text-on-secondary"
         >
           <Bell size={16} />
           Send test notification (to you only)
