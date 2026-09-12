@@ -76,9 +76,13 @@ export function NameGeneratorForm({ gender }: { gender: "BOY" | "GIRL" }) {
   function handleConfirm() {
     if (!preview) return;
     startTransition(async () => {
-      await confirmInsertGeneratedNames(preview.newNames, gender);
-      setMessage(`Added ${preview.newNames.length} new ${gender.toLowerCase()} names.`);
-      setPreview(null);
+      try {
+        await confirmInsertGeneratedNames(preview.newNames, gender);
+        setMessage(`Added ${preview.newNames.length} new ${gender.toLowerCase()} names.`);
+        setPreview(null);
+      } catch (err) {
+        setMessage(err instanceof Error ? err.message : "Failed to add names.");
+      }
     });
   }
 
@@ -160,7 +164,7 @@ export function NameGeneratorForm({ gender }: { gender: "BOY" | "GIRL" }) {
         disabled={isPending}
         className="card-shadow w-full rounded-full bg-primary py-3 text-sm font-bold text-on-primary disabled:opacity-50 disabled:shadow-none"
       >
-        Generate names
+        {isPending ? "Generating…" : "Generate names"}
       </button>
 
       {message && (
