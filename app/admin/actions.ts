@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { extractCandidateNames, normalize, type NameCandidate } from "@/lib/nameParsing";
+import { suggestNamesFromRankings } from "@/lib/nameSuggest";
 import { genderSchema } from "@/lib/validation";
 
 async function requireAdmin() {
@@ -22,6 +23,32 @@ export async function previewNames(raw: string, gender: string): Promise<Preview
   const parsedGender = genderSchema.parse(gender);
 
   const { candidates } = extractCandidateNames(raw);
+
+  const existing = await prisma.name.findMany({
+    where: { gender: parsedGender },
+    select: { normalizedText: true },
+  });
+  const existingSet = new Set(existing.map((n) => n.normalizedText));
+
+  const newNames: NameCandidate[] = [];
+  const duplicateNames: NameCandidate[] = [];
+
+  for (const candidate of candidates) {
+    if (existingSet.has(normalize(candidate.text))) {
+      duplicateNames.push(candidate);
+    } else {
+      newNames.push(candidate);
+    }
+  }
+
+  return { newNames, duplicateNames };
+}
+
+export async function suggestNames(gender: string): Promise<PreviewResult> {
+  await requireAdmin();
+  const parsedGender = genderSchema.parse(gender);
+
+  const candidates = await suggestNamesFromRankings(parsedGender);
 
   const existing = await prisma.name.findMany({
     where: { gender: parsedGender },

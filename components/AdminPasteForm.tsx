@@ -1,7 +1,13 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { previewNames, confirmInsertNames, clearAllNames, type PreviewResult } from "@/app/admin/actions";
+import {
+  previewNames,
+  confirmInsertNames,
+  clearAllNames,
+  suggestNames,
+  type PreviewResult,
+} from "@/app/admin/actions";
 import { NameManager } from "@/components/NameManager";
 
 export function AdminPasteForm() {
@@ -26,6 +32,21 @@ export function AdminPasteForm() {
       setMessage(`Added ${preview.newNames.length} new ${gender.toLowerCase()} names.`);
       setPreview(null);
       setRaw("");
+    });
+  }
+
+  function handleSuggest() {
+    setMessage(null);
+    startTransition(async () => {
+      try {
+        const result = await suggestNames(gender);
+        setPreview(result);
+        if (result.newNames.length === 0) {
+          setMessage("Claude didn't suggest any new names this time.");
+        }
+      } catch (err) {
+        setMessage(err instanceof Error ? err.message : "Failed to get suggestions.");
+      }
     });
   }
 
@@ -68,6 +89,14 @@ export function AdminPasteForm() {
         className="card-shadow w-full rounded-full bg-primary py-3 text-sm font-bold text-on-primary disabled:opacity-50 disabled:shadow-none"
       >
         Preview
+      </button>
+
+      <button
+        onClick={handleSuggest}
+        disabled={isPending}
+        className="card-shadow w-full rounded-full border border-primary py-3 text-sm font-bold text-primary disabled:opacity-50"
+      >
+        Suggest names with AI (based on rankings)
       </button>
 
       {message && (
