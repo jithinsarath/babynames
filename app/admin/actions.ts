@@ -62,3 +62,12 @@ export async function confirmInsertNames(names: NameCandidate[], gender: string)
 
   revalidatePath(`/vote/${parsedGender.toLowerCase()}`);
 }
+
+export async function clearAllNames() {
+  await requireAdmin();
+
+  await prisma.name.deleteMany();
+
+  revalidatePath("/vote/boy");
+  revalidatePath("/vote/girl");
+}

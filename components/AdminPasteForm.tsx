@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { previewNames, confirmInsertNames, type PreviewResult } from "@/app/admin/actions";
+import { previewNames, confirmInsertNames, clearAllNames, type PreviewResult } from "@/app/admin/actions";
 
 export function AdminPasteForm() {
   const [gender, setGender] = useState<"BOY" | "GIRL">("BOY");
@@ -25,6 +25,15 @@ export function AdminPasteForm() {
       setMessage(`Added ${preview.newNames.length} new ${gender.toLowerCase()} names.`);
       setPreview(null);
       setRaw("");
+    });
+  }
+
+  function handleClearAll() {
+    if (!confirm("Delete ALL names (and their votes/rankings)? This cannot be undone.")) return;
+    startTransition(async () => {
+      await clearAllNames();
+      setMessage("Cleared all names.");
+      setPreview(null);
     });
   }
 
@@ -101,6 +110,14 @@ export function AdminPasteForm() {
           </button>
         </div>
       )}
+
+      <button
+        onClick={handleClearAll}
+        disabled={isPending}
+        className="w-full rounded-full border border-no py-3 text-sm font-bold text-no disabled:opacity-50"
+      >
+        Clear all names
+      </button>
     </div>
   );
 }
