@@ -143,7 +143,7 @@ export function SwipeDeck({
 
   // Timestamp the moment each card becomes the top card, so we can measure
   // how long the user spent looking at it before deciding.
-  const shownAtRef = useRef(Date.now());
+  const shownAtRef = useRef(0);
   useEffect(() => {
     shownAtRef.current = Date.now();
   }, [current?.id]);

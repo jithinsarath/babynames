@@ -1,10 +1,12 @@
 import Link from "next/link";
-import { Heart, Users, Star, Ban, BarChart3 } from "lucide-react";
+import { Heart, Users, Star, Ban, BarChart3, Sparkles } from "lucide-react";
 import { auth, signOut } from "@/lib/auth";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { PushOptIn } from "@/components/PushOptIn";
 
 const TABS = [
   { href: "/vote/boy", label: "Vote", Icon: Heart },
+  { href: "/generate/boy", label: "Generate", Icon: Sparkles },
   { href: "/compare/boy", label: "Compare", Icon: Users },
   { href: "/rank/boy", label: "Rank", Icon: Star },
 ];
@@ -28,6 +30,7 @@ export async function NavBar() {
           naming kp <span className="text-primary">;)</span>
         </span>
         <div className="flex items-center gap-3">
+          {session.user.isVoter && <PushOptIn />}
           <ThemeToggle />
           <form
             action={async () => {
