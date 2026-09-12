@@ -15,6 +15,10 @@ export async function notifySubscribers(
     where: opts?.userId ? { userId: opts.userId } : undefined,
   });
 
+  console.log(`[push] notifying ${subscriptions.length} subscription(s)`, {
+    userId: opts?.userId,
+  });
+
   await Promise.all(
     subscriptions.map(async (sub) => {
       try {
@@ -25,8 +29,10 @@ export async function notifySubscribers(
           },
           JSON.stringify(payload),
         );
+        console.log(`[push] sent to ${sub.endpoint}`);
       } catch (err) {
         const statusCode = (err as { statusCode?: number }).statusCode;
+        console.error(`[push] failed for ${sub.endpoint}: status=${statusCode}`, err);
         if (statusCode === 404 || statusCode === 410) {
           await prisma.pushSubscription.delete({ where: { id: sub.id } }).catch(() => {});
         }

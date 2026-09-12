@@ -26,6 +26,8 @@ export async function subscribeToPush(subscription: {
       auth: subscription.keys.auth,
     },
   });
+
+  console.log(`[push] subscribed ${user.email} at ${subscription.endpoint}`);
 }
 
 export async function unsubscribeFromPush(endpoint: string) {
