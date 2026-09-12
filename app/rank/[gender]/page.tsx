@@ -1,8 +1,12 @@
 import { notFound } from "next/navigation";
+import { Zap } from "lucide-react";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { GenderTabs } from "@/components/GenderTabs";
 import { RankingSlider } from "@/components/RankingSlider";
+import { formatMs } from "@/lib/formatMs";
+
+const INSTANT_MS = 1500;
 
 const ALLOWED_EMAILS = (process.env.ALLOWED_EMAILS ?? "")
   .split(",")
@@ -35,7 +39,16 @@ export default async function RankPage({
       votes: { some: { userId: user.id, choice: "YES" } },
     },
     orderBy: { text: "asc" },
-    include: { rankings: true },
+    include: { rankings: true, votes: { where: { userId: user.id } } },
+  });
+
+  // Surface gut-reaction yeses first: the faster you said yes, the stronger
+  // the signal, so those are the most useful to score first. Untimed votes
+  // (cast before we tracked this) sort to the end.
+  const sortedNames = [...names].sort((a, b) => {
+    const msA = a.votes[0]?.decisionMs ?? Infinity;
+    const msB = b.votes[0]?.decisionMs ?? Infinity;
+    return msA - msB;
   });
 
   return (
@@ -51,22 +64,36 @@ export default async function RankPage({
         </p>
       ) : (
         <ul className="flex flex-col gap-3">
-          {names.map((name) => {
-            const myScore = name.rankings.find((r) => r.userId === user.id)?.score ?? null;
+          {sortedNames.map((name) => {
+            const myRanking = name.rankings.find((r) => r.userId === user.id);
+            const myScore = myRanking?.score ?? null;
             const theirScore = otherVoter
               ? name.rankings.find((r) => r.userId === otherVoter.id)?.score ?? null
               : null;
+            const myDecisionMs = name.votes[0]?.decisionMs ?? null;
+            const myRevisionCount = myRanking?.revisionCount ?? 0;
 
             return (
               <li key={name.id} className="card-shadow flex flex-col gap-3 rounded-3xl bg-surface px-4 py-4">
                 <div className="flex items-center justify-between">
-                  <span className="font-display text-xl font-semibold text-ink">{name.text}</span>
+                  <span className="flex items-center gap-2 font-display text-xl font-semibold text-ink">
+                    {name.text}
+                    {myDecisionMs !== null && myDecisionMs < INSTANT_MS && (
+                      <Zap size={16} className="text-match" />
+                    )}
+                  </span>
                   {theirScore !== null && (
                     <span className="rounded-full bg-primary/15 px-2.5 py-1 text-xs font-bold text-on-primary">
                       their score: {theirScore}
                     </span>
                   )}
                 </div>
+                {myDecisionMs !== null && (
+                  <span className="text-xs font-semibold text-ink-soft">
+                    you said yes in {formatMs(myDecisionMs)}
+                    {myRevisionCount > 0 && ` · changed your mind ${myRevisionCount}× while scoring`}
+                  </span>
+                )}
                 <RankingSlider nameId={name.id} gender={gender} initialScore={myScore} />
               </li>
             );

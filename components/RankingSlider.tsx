@@ -23,11 +23,10 @@ export function RankingSlider({
         max={10}
         value={score}
         disabled={isPending}
-        onChange={(e) => {
-          const next = Number(e.target.value);
-          setScore(next);
+        onChange={(e) => setScore(Number(e.target.value))}
+        onPointerUp={() => {
           startTransition(() => {
-            setRanking(nameId, next, gender.toUpperCase());
+            setRanking(nameId, score, gender.toUpperCase());
           });
         }}
         className="kp-slider flex-1"

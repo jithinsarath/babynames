@@ -1,6 +1,7 @@
 import Link from "next/link";
-import { Heart, Users, Star, Ban } from "lucide-react";
+import { Heart, Users, Star, Ban, BarChart3 } from "lucide-react";
 import { auth, signOut } from "@/lib/auth";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 const TABS = [
   { href: "/vote/boy", label: "Vote", Icon: Heart },
@@ -13,7 +14,11 @@ export async function NavBar() {
   if (!session?.user) return null;
 
   const tabs = session.user.isAdmin
-    ? [...TABS, { href: "/admin", label: "No Entry", Icon: Ban }]
+    ? [
+        ...TABS,
+        { href: "/admin/analytics/boy", label: "Stats", Icon: BarChart3 },
+        { href: "/admin", label: "No Entry", Icon: Ban },
+      ]
     : TABS;
 
   return (
@@ -22,16 +27,19 @@ export async function NavBar() {
         <span className="font-display text-lg font-semibold text-ink">
           naming kp <span className="text-primary">;)</span>
         </span>
-        <form
-          action={async () => {
-            "use server";
-            await signOut({ redirectTo: "/signin" });
-          }}
-        >
-          <button type="submit" className="text-sm font-semibold text-ink-soft active:text-ink">
-            Sign out
-          </button>
-        </form>
+        <div className="flex items-center gap-3">
+          <ThemeToggle />
+          <form
+            action={async () => {
+              "use server";
+              await signOut({ redirectTo: "/signin" });
+            }}
+          >
+            <button type="submit" className="text-sm font-semibold text-ink-soft active:text-ink">
+              Sign out
+            </button>
+          </form>
+        </div>
       </header>
 
       <nav
