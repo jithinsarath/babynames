@@ -1,0 +1,80 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DATABASE_URL_UNPOOLED")
+}
+
+enum Gender {
+  BOY
+  GIRL
+}
+
+enum VoteChoice {
+  YES
+  NO
+  MAYBE
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  image     String?
+  createdAt DateTime @default(now())
+
+  votes      Vote[]
+  rankings   Ranking[]
+  namesAdded Name[]    @relation("NameCreatedBy")
+}
+
+model Name {
+  id             String   @id @default(cuid())
+  text           String
+  normalizedText String
+  meaning        String?
+  gender         Gender
+  createdAt      DateTime @default(now())
+  createdById    String?
+  createdBy      User?    @relation("NameCreatedBy", fields: [createdById], references: [id])
+
+  votes    Vote[]
+  rankings Ranking[]
+
+  @@unique([normalizedText, gender], name: "uniq_name_per_gender")
+  @@index([gender])
+}
+
+model Vote {
+  id        String     @id @default(cuid())
+  userId    String
+  nameId    String
+  choice    VoteChoice
+  updatedAt DateTime   @updatedAt
+  createdAt DateTime   @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name Name @relation(fields: [nameId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, nameId])
+}
+
+model Ranking {
+  id        String   @id @default(cuid())
+  userId    String
+  nameId    String
+  score     Int
+  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name Name @relation(fields: [nameId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, nameId])
+}
