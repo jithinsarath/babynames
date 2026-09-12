@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Fraunces, Plus_Jakarta_Sans } from "next/font/google";
+import { Analytics } from "@vercel/analytics/next";
 import { NavBar } from "@/components/NavBar";
 import "./globals.css";
 
@@ -34,6 +35,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <body className="min-h-full flex flex-col bg-canvas text-ink">
         <NavBar />
         <main className="flex-1 pb-28">{children}</main>
+        <Analytics />
       </body>
     </html>
   );
