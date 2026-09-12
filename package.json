@@ -35,5 +35,11 @@
     "prisma": "^6.19.3",
     "tailwindcss": "^4",
     "typescript": "^5"
+  },
+  "allowScripts": {
+    "@prisma/client": "6.19.3",
+    "@prisma/engines": "6.19.3",
+    "prisma": "6.19.3",
+    "unrs-resolver": "1.12.2"
   }
 }
