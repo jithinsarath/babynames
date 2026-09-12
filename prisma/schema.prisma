@@ -29,10 +29,11 @@ model User {
   image     String?
   createdAt DateTime @default(now())
 
-  votes      Vote[]
-  voteEvents VoteEvent[]
-  rankings   Ranking[]
-  namesAdded Name[]      @relation("NameCreatedBy")
+  votes             Vote[]
+  voteEvents        VoteEvent[]
+  rankings          Ranking[]
+  namesAdded        Name[]             @relation("NameCreatedBy")
+  pushSubscriptions PushSubscription[]
 }
 
 model Name {
@@ -85,6 +86,17 @@ model VoteEvent {
   name Name @relation(fields: [nameId], references: [id], onDelete: Cascade)
 
   @@index([userId, nameId, createdAt])
+}
+
+model PushSubscription {
+  id        String   @id @default(cuid())
+  userId    String
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Ranking {

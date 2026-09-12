@@ -23,8 +23,10 @@ export function ThemeToggle() {
   const [theme, setTheme] = useState<Theme>("system");
 
   useEffect(() => {
-    const stored = localStorage.getItem("theme") as Theme | null;
-    if (stored) setTheme(stored);
+    queueMicrotask(() => {
+      const stored = localStorage.getItem("theme") as Theme | null;
+      if (stored) setTheme(stored);
+    });
   }, []);
 
   function choose(next: Theme) {
