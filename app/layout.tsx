@@ -21,6 +21,11 @@ const jakarta = Plus_Jakarta_Sans({
 export const metadata: Metadata = {
   title: "naming kp ;)",
   description: "Pick baby names together",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "naming kp ;)",
+  },
 };
 
 export const viewport: Viewport = {
@@ -33,6 +38,13 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="en" className={`${fraunces.variable} ${jakarta.variable} h-full antialiased`}>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `try{var t=localStorage.getItem("theme");if(t==="light"||t==="dark"){document.documentElement.dataset.theme=t}}catch(e){}`,
+          }}
+        />
+      </head>
       <body className="min-h-full flex flex-col bg-canvas text-ink">
         <NavBar />
         <main className="flex-1 pb-28">{children}</main>

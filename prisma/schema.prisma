@@ -30,8 +30,9 @@ model User {
   createdAt DateTime @default(now())
 
   votes      Vote[]
+  voteEvents VoteEvent[]
   rankings   Ranking[]
-  namesAdded Name[]    @relation("NameCreatedBy")
+  namesAdded Name[]      @relation("NameCreatedBy")
 }
 
 model Name {
@@ -44,20 +45,25 @@ model Name {
   createdById    String?
   createdBy      User?    @relation("NameCreatedBy", fields: [createdById], references: [id])
 
-  votes    Vote[]
-  rankings Ranking[]
+  votes      Vote[]
+  voteEvents VoteEvent[]
+  rankings   Ranking[]
 
   @@unique([normalizedText, gender], name: "uniq_name_per_gender")
   @@index([gender])
 }
 
 model Vote {
-  id        String     @id @default(cuid())
-  userId    String
-  nameId    String
-  choice    VoteChoice
-  updatedAt DateTime   @updatedAt
-  createdAt DateTime   @default(now())
+  id           String     @id @default(cuid())
+  userId       String
+  nameId       String
+  choice       VoteChoice
+  decisionMs   Int?
+  flipCount    Int        @default(0)
+  deckPosition Int?
+  viaSearch    Boolean    @default(false)
+  updatedAt    DateTime   @updatedAt
+  createdAt    DateTime   @default(now())
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
   name Name @relation(fields: [nameId], references: [id], onDelete: Cascade)
@@ -65,13 +71,30 @@ model Vote {
   @@unique([userId, nameId])
 }
 
+model VoteEvent {
+  id           String     @id @default(cuid())
+  userId       String
+  nameId       String
+  choice       VoteChoice
+  decisionMs   Int?
+  deckPosition Int?
+  viaSearch    Boolean    @default(false)
+  createdAt    DateTime   @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name Name @relation(fields: [nameId], references: [id], onDelete: Cascade)
+
+  @@index([userId, nameId, createdAt])
+}
+
 model Ranking {
-  id        String   @id @default(cuid())
-  userId    String
-  nameId    String
-  score     Int
-  updatedAt DateTime @updatedAt
-  createdAt DateTime @default(now())
+  id            String   @id @default(cuid())
+  userId        String
+  nameId        String
+  score         Int
+  revisionCount Int      @default(0)
+  updatedAt     DateTime @updatedAt
+  createdAt     DateTime @default(now())
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
   name Name @relation(fields: [nameId], references: [id], onDelete: Cascade)

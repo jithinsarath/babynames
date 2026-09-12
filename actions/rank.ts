@@ -30,9 +30,15 @@ export async function setRanking(
     throw new Error("Can only rank names you voted YES on");
   }
 
+  const existing = await prisma.ranking.findUnique({
+    where: { userId_nameId: { userId: user.id, nameId } },
+  });
+  const revisionCount =
+    (existing?.revisionCount ?? 0) + (existing && existing.score !== parsedScore ? 1 : 0);
+
   await prisma.ranking.upsert({
     where: { userId_nameId: { userId: user.id, nameId } },
-    update: { score: parsedScore },
+    update: { score: parsedScore, revisionCount },
     create: { userId: user.id, nameId, score: parsedScore },
   });
 

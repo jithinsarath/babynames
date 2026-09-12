@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useTransition } from "react";
+import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import Image from "next/image";
 import { motion, useMotionValue, useTransform, AnimatePresence } from "framer-motion";
 import { ThumbsUp, HelpCircle, ThumbsDown, RotateCcw, Search, X } from "lucide-react";
@@ -141,10 +141,18 @@ export function SwipeDeck({
   const current = activeNames[index];
   const upcoming = activeNames[index + 1];
 
+  // Timestamp the moment each card becomes the top card, so we can measure
+  // how long the user spent looking at it before deciding.
+  const shownAtRef = useRef(Date.now());
+  useEffect(() => {
+    shownAtRef.current = Date.now();
+  }, [current?.id]);
+
   function decide(choice: Choice) {
     if (!current) return;
+    const decisionMs = Date.now() - shownAtRef.current;
     startTransition(() => {
-      castVote(current.id, choice, gender.toUpperCase());
+      castVote(current.id, choice, gender.toUpperCase(), decisionMs, index, !!search.trim());
     });
     setIndex((i) => i + 1);
   }
