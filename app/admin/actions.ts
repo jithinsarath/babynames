@@ -63,6 +63,38 @@ export async function confirmInsertNames(names: NameCandidate[], gender: string)
   revalidatePath(`/vote/${parsedGender.toLowerCase()}`);
 }
 
+export async function listNames(gender: string) {
+  await requireAdmin();
+  const parsedGender = genderSchema.parse(gender);
+
+  return prisma.name.findMany({
+    where: { gender: parsedGender },
+    orderBy: { text: "asc" },
+    select: { id: true, text: true, meaning: true },
+  });
+}
+
+export async function updateName(id: string, text: string, meaning: string) {
+  await requireAdmin();
+
+  await prisma.name.update({
+    where: { id },
+    data: { text, normalizedText: normalize(text), meaning: meaning || null },
+  });
+
+  revalidatePath("/vote/boy");
+  revalidatePath("/vote/girl");
+}
+
+export async function deleteName(id: string) {
+  await requireAdmin();
+
+  await prisma.name.delete({ where: { id } });
+
+  revalidatePath("/vote/boy");
+  revalidatePath("/vote/girl");
+}
+
 export async function clearAllNames() {
   await requireAdmin();
 

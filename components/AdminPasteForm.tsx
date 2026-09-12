@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { previewNames, confirmInsertNames, clearAllNames, type PreviewResult } from "@/app/admin/actions";
+import { NameManager } from "@/components/NameManager";
 
 export function AdminPasteForm() {
   const [gender, setGender] = useState<"BOY" | "GIRL">("BOY");
@@ -118,6 +119,13 @@ export function AdminPasteForm() {
       >
         Clear all names
       </button>
+
+      <div>
+        <h2 className="mb-2 font-display text-lg font-semibold text-ink">
+          {gender === "BOY" ? "Boy" : "Girl"} names
+        </h2>
+        <NameManager key={gender} gender={gender} />
+      </div>
     </div>
   );
 }
