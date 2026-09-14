@@ -9,12 +9,15 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     ...authConfig.callbacks,
     async signIn({ user }) {
       const email = user.email?.toLowerCase();
-      if (!isAllowed(email)) return false;
+      if (!email) return false;
+
+      const existing = await prisma.user.findUnique({ where: { email } });
+      if (!isAllowed(email) && !existing?.isViewer) return false;
 
       await prisma.user.upsert({
         where: { email },
         update: { name: user.name, image: user.image },
-        create: { email: email!, name: user.name, image: user.image },
+        create: { email, name: user.name, image: user.image },
       });
 
       return true;
@@ -24,6 +27,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       if (session.user) {
         session.user.isAdmin = isAdmin(email);
         session.user.isVoter = isAllowedVoter(email);
+        const dbUser = email ? await prisma.user.findUnique({ where: { email } }) : null;
+        session.user.isViewer = dbUser?.isViewer ?? false;
       }
       return session;
     },
