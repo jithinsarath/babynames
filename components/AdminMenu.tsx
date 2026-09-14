@@ -2,10 +2,18 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { Shield } from "lucide-react";
+import { Shield, Eye, MessageSquarePlus, Users, BarChart3, Ban } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
-type AdminLink = { href: string; label: string; Icon: LucideIcon };
+type AdminLink = { href: string; label: string };
+
+const ICONS: Record<string, LucideIcon> = {
+  "/votes/boy": Eye,
+  "/admin/suggestions": MessageSquarePlus,
+  "/admin/viewers": Users,
+  "/admin/analytics/boy": BarChart3,
+  "/admin": Ban,
+};
 
 export function AdminMenu({ links, hasBadge }: { links: AdminLink[]; hasBadge: boolean }) {
   const [open, setOpen] = useState(false);
@@ -37,17 +45,20 @@ export function AdminMenu({ links, hasBadge }: { links: AdminLink[]; hasBadge: b
 
       {open && (
         <div className="card-shadow-lg absolute bottom-full left-1/2 mb-2 flex w-48 -translate-x-1/2 flex-col gap-1 rounded-2xl bg-surface p-1.5">
-          {links.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              onClick={() => setOpen(false)}
-              className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-sm font-bold text-ink-soft active:bg-primary/15 active:text-primary"
-            >
-              <link.Icon size={16} strokeWidth={2.25} />
-              {link.label}
-            </Link>
-          ))}
+          {links.map((link) => {
+            const Icon = ICONS[link.href] ?? Shield;
+            return (
+              <Link
+                key={link.href}
+                href={link.href}
+                onClick={() => setOpen(false)}
+                className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-sm font-bold text-ink-soft active:bg-primary/15 active:text-primary"
+              >
+                <Icon size={16} strokeWidth={2.25} />
+                {link.label}
+              </Link>
+            );
+          })}
         </div>
       )}
     </div>
