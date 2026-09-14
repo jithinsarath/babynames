@@ -21,7 +21,7 @@ export async function NavBar() {
   const session = await auth();
   if (!session?.user) return null;
 
-  let tabs = session.user.isVoter ? TABS : [];
+  let tabs = session.user.isVoter || session.user.isAdmin ? [...TABS] : [];
 
   if (session.user.isViewer && !session.user.isAdmin) {
     tabs = [...tabs, ...VIEWER_TABS];
