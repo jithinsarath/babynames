@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Heart, Users, Star, Ban, BarChart3, Sparkles, Eye, MessageSquarePlus } from "lucide-react";
+import { Heart, Users, Star, Sparkles, Eye, MessageSquarePlus } from "lucide-react";
 import { auth, signOut } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -34,15 +34,14 @@ export async function NavBar() {
   }
 
   const adminLinks = [
-    { href: "/votes/boy", label: "Votes", Icon: Eye },
+    { href: "/votes/boy", label: "Votes" },
     {
       href: "/admin/suggestions",
       label: pendingCount > 0 ? `Suggestions (${pendingCount})` : "Suggestions",
-      Icon: MessageSquarePlus,
     },
-    { href: "/admin/viewers", label: "Viewers", Icon: Users },
-    { href: "/admin/analytics/boy", label: "Stats", Icon: BarChart3 },
-    { href: "/admin", label: "No Entry", Icon: Ban },
+    { href: "/admin/viewers", label: "Viewers" },
+    { href: "/admin/analytics/boy", label: "Stats" },
+    { href: "/admin", label: "No Entry" },
   ];
 
   return (
