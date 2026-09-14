@@ -150,6 +150,96 @@ export async function clearAllNames() {
   revalidatePath("/vote/girl");
 }
 
+export async function listViewers() {
+  await requireAdmin();
+
+  return prisma.user.findMany({
+    where: { isViewer: true },
+    orderBy: { email: "asc" },
+    select: { id: true, email: true, name: true },
+  });
+}
+
+export async function inviteViewer(email: string) {
+  await requireAdmin();
+  const normalizedEmail = email.trim().toLowerCase();
+
+  await prisma.user.upsert({
+    where: { email: normalizedEmail },
+    update: { isViewer: true },
+    create: { email: normalizedEmail, isViewer: true },
+  });
+
+  revalidatePath("/admin/viewers");
+}
+
+export async function revokeViewer(userId: string) {
+  await requireAdmin();
+
+  await prisma.user.update({ where: { id: userId }, data: { isViewer: false } });
+
+  revalidatePath("/admin/viewers");
+}
+
+export async function listPendingSuggestions() {
+  await requireAdmin();
+
+  return prisma.nameSuggestion.findMany({
+    where: { status: "PENDING" },
+    orderBy: { createdAt: "asc" },
+    include: { suggestedBy: true },
+  });
+}
+
+export async function approveSuggestion(id: string) {
+  const user = await requireAdmin();
+
+  const suggestion = await prisma.nameSuggestion.findUniqueOrThrow({ where: { id } });
+  if (suggestion.status !== "PENDING") return;
+
+  const admin = await prisma.user.findUnique({ where: { email: user.email! } });
+
+  await prisma.$transaction([
+    prisma.name.create({
+      data: {
+        text: suggestion.text,
+        normalizedText: suggestion.normalizedText,
+        meaning: suggestion.meaning,
+        gender: suggestion.gender,
+        createdById: admin?.id,
+      },
+    }),
+    prisma.nameSuggestion.update({
+      where: { id },
+      data: { status: "APPROVED", reviewedAt: new Date() },
+    }),
+  ]);
+
+  revalidatePath("/admin/suggestions");
+  revalidatePath(`/vote/${suggestion.gender.toLowerCase()}`);
+
+  const genderLabel = suggestion.gender === "BOY" ? "boy" : "girl";
+  await notifySubscribers({
+    title: "New names to vote on!",
+    body: `${suggestion.text} was just added.`,
+    url: `/vote/${genderLabel}`,
+  });
+}
+
+export async function rejectSuggestion(id: string) {
+  await requireAdmin();
+
+  const suggestion = await prisma.nameSuggestion.findUniqueOrThrow({ where: { id } });
+  if (suggestion.status !== "PENDING") return;
+
+  await prisma.nameSuggestion.update({
+    where: { id },
+    data: { status: "REJECTED", reviewedAt: new Date() },
+  });
+
+  revalidatePath("/admin/suggestions");
+}
+
 export async function sendTestNotification() {
   const admin = await requireAdmin();
 

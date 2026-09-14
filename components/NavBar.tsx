@@ -1,6 +1,7 @@
 import Link from "next/link";
-import { Heart, Users, Star, Ban, BarChart3, Sparkles } from "lucide-react";
+import { Heart, Users, Star, Ban, BarChart3, Sparkles, Eye, MessageSquarePlus } from "lucide-react";
 import { auth, signOut } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { PushOptIn } from "@/components/PushOptIn";
 
@@ -11,17 +12,36 @@ const TABS = [
   { href: "/rank/boy", label: "Rank", Icon: Star },
 ];
 
+const VIEWER_TABS = [
+  { href: "/votes/boy", label: "Votes", Icon: Eye },
+  { href: "/suggest/boy", label: "Suggest", Icon: MessageSquarePlus },
+];
+
 export async function NavBar() {
   const session = await auth();
   if (!session?.user) return null;
 
-  const tabs = session.user.isAdmin
-    ? [
-        ...TABS,
-        { href: "/admin/analytics/boy", label: "Stats", Icon: BarChart3 },
-        { href: "/admin", label: "No Entry", Icon: Ban },
-      ]
-    : TABS;
+  let tabs = session.user.isVoter ? TABS : [];
+
+  if (session.user.isViewer && !session.user.isAdmin) {
+    tabs = [...tabs, ...VIEWER_TABS];
+  }
+
+  if (session.user.isAdmin) {
+    const pendingCount = await prisma.nameSuggestion.count({ where: { status: "PENDING" } });
+    tabs = [
+      ...tabs,
+      { href: "/votes/boy", label: "Votes", Icon: Eye },
+      {
+        href: "/admin/suggestions",
+        label: pendingCount > 0 ? `Suggestions (${pendingCount})` : "Suggestions",
+        Icon: MessageSquarePlus,
+      },
+      { href: "/admin/viewers", label: "Viewers", Icon: Users },
+      { href: "/admin/analytics/boy", label: "Stats", Icon: BarChart3 },
+      { href: "/admin", label: "No Entry", Icon: Ban },
+    ];
+  }
 
   return (
     <>

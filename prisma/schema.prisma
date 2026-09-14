@@ -22,11 +22,18 @@ enum VoteChoice {
   MAYBE
 }
 
+enum SuggestionStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
 model User {
   id        String   @id @default(cuid())
   email     String   @unique
   name      String?
   image     String?
+  isViewer  Boolean  @default(false)
   createdAt DateTime @default(now())
 
   votes             Vote[]
@@ -34,6 +41,7 @@ model User {
   rankings          Ranking[]
   namesAdded        Name[]             @relation("NameCreatedBy")
   pushSubscriptions PushSubscription[]
+  suggestions       NameSuggestion[]
 }
 
 model Name {
@@ -97,6 +105,21 @@ model PushSubscription {
   createdAt DateTime @default(now())
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model NameSuggestion {
+  id             String           @id @default(cuid())
+  text           String
+  normalizedText String
+  meaning        String?
+  gender         Gender
+  status         SuggestionStatus @default(PENDING)
+  suggestedById  String
+  suggestedBy    User             @relation(fields: [suggestedById], references: [id])
+  createdAt      DateTime         @default(now())
+  reviewedAt     DateTime?
+
+  @@index([status])
 }
 
 model Ranking {
